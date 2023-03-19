@@ -17,6 +17,36 @@ export default function App() {
         </div>
       </Wrapper>
       <Wrapper>
+        <h1 className="font-bold text-lg px-7">Pagination</h1>
+        <div className="w-full overflow-y-hidden">
+          <Carousel pagination>
+            {ITEMS.map((item, idx) => (
+              <Card item={item} key={`carousel-default-${idx}`} />
+            ))}
+          </Carousel>
+        </div>
+      </Wrapper>
+      <Wrapper>
+        <h1 className="font-bold text-lg px-7">Scale on Hover</h1>
+        <div className="w-full overflow-y-hidden">
+          <Carousel scaleOnHover>
+            {ITEMS.map((item, idx) => (
+              <Card item={item} key={`carousel-default-${idx}`} />
+            ))}
+          </Carousel>
+        </div>
+      </Wrapper>
+      <Wrapper>
+        <h1 className="font-bold text-lg px-7">Custom Spacing</h1>
+        <div className="w-full overflow-y-hidden">
+          <Carousel spacing={20}>
+            {ITEMS.map((item, idx) => (
+              <Card item={item} key={`carousel-default-${idx}`} />
+            ))}
+          </Carousel>
+        </div>
+      </Wrapper>
+      <Wrapper>
         <h1 className="font-bold text-lg px-7">Batch Scroll</h1>
         <div className="w-full overflow-y-hidden">
           <Carousel batchScroll>
@@ -29,7 +59,7 @@ export default function App() {
       <Wrapper>
         <h1 className="font-bold text-lg px-7">Automatic Scroll</h1>
         <div className="w-full overflow-y-hidden">
-          <Carousel autoPlay interval={1000} hideControls>
+          <Carousel pagination autoPlay interval={1000} hideControls>
             {ITEMS.map((item, idx) => (
               <Card item={item} key={`carousel-default-${idx}`} />
             ))}
@@ -39,7 +69,7 @@ export default function App() {
       <Wrapper>
         <h1 className="font-bold text-lg px-7">Automatic Batch Scroll</h1>
         <div className="w-full overflow-y-hidden">
-          <Carousel autoPlay hideControls batchScroll interval={1000}>
+          <Carousel batchScroll autoPlay interval={500} hideControls>
             {ITEMS.map((item, idx) => (
               <Card item={item} key={`carousel-default-${idx}`} />
             ))}

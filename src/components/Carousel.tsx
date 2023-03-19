@@ -4,8 +4,6 @@ import useMeasure from "react-use-measure";
 
 type PropsWithoutAutoplay = {
   autoPlay?: false;
-  gap?: number;
-  paddingX?: number;
   hideControls?: boolean;
   batchScroll?: boolean;
 };
@@ -14,11 +12,12 @@ type PropsWithAutoplay = {
   interval: number;
 };
 type CommonProps = {
-  gap?: number;
-  paddingX?: number;
+  spacing?: number;
   hideControls?: boolean;
   batchScroll?: boolean;
+  scaleOnHover?: boolean;
   children: React.ReactNode;
+  pagination?: boolean;
 };
 
 export default function Carousel(
@@ -42,34 +41,36 @@ export default function Carousel(
   const parentWidth = containerBounds.width;
   const childWidth = childBounds.width;
 
-  const gap = useMemo(() => props.gap || 10, []);
-  const paddingX = useMemo(() => props.paddingX || gap, []);
+  const spacing = useMemo(() => props.spacing || 10, []);
+
+  // if 10 spacing is 40px, then 1 spacing is 4px . SO formula is 4 * spacing
 
   const SCALE_FACTOR = useMemo(() => 1.1, []);
   const ITEMS_IN_VIEW = useMemo(
-    () =>
-      Math.floor(
-        (parentWidth - paddingX * 2 + gap * 2) / (childWidth + gap * 4)
-      ),
+    () => Math.floor((parentWidth - spacing * 4) / (childWidth + spacing * 4)),
     [parentWidth, childWidth]
   );
 
+  const current = Math.floor(activeCardIdx / ITEMS_IN_VIEW);
+  const prev = Math.floor((activeCardIdx - 1) / ITEMS_IN_VIEW);
+  const next = Math.floor((activeCardIdx + 1) / ITEMS_IN_VIEW);
+
   useEffect(() => {
-    const current = Math.floor(activeCardIdx / ITEMS_IN_VIEW);
-    const prev = Math.floor((activeCardIdx - 1) / ITEMS_IN_VIEW);
-    const next = Math.floor((activeCardIdx + 1) / ITEMS_IN_VIEW);
     let amt = 0;
     if (props.batchScroll) {
-      if (current === prev) {
-        amt = amt =
-          -(childWidth + paddingX * 2 + gap * 2) * prev * ITEMS_IN_VIEW;
-      } else if (current === next) {
-        amt = -(childWidth + paddingX * 2 + gap * 2) * current * ITEMS_IN_VIEW;
-      }
+      if (current === prev)
+        amt = -(childWidth + spacing * 4) * prev * ITEMS_IN_VIEW;
+      else if (current === next)
+        amt = -(childWidth + spacing * 4) * current * ITEMS_IN_VIEW;
+      else
+        amt =
+          activeCardIdx >= ITEMS_IN_VIEW % activeCardIdx
+            ? -(childWidth + spacing * 4) * activeCardIdx
+            : 0;
     } else {
       amt =
         activeCardIdx >= ITEMS_IN_VIEW % activeCardIdx
-          ? -(childWidth + paddingX * 2 + gap * 2) * activeCardIdx
+          ? -(childWidth + spacing * 4) * activeCardIdx
           : 0;
     }
     setScrollAmount(amt);
@@ -92,7 +93,12 @@ export default function Carousel(
       <div className="w-full grid items-center">
         <div
           id="carousel-wrapper"
-          className="flex gap-10 px-10 overflow-x-hidden py-5"
+          className={`flex overflow-x-hidden py-5`}
+          style={{
+            gap: `${spacing * 4}px`,
+            paddingLeft: `${spacing * 4}px`,
+            paddingRight: `${spacing * 4}px`,
+          }}
         >
           {ITEMS.map((item, idx) => (
             <AnimatePresence key={`carousel-item-${idx}`}>
@@ -101,6 +107,14 @@ export default function Carousel(
                 className="flex-1"
                 initial={{
                   scale: 1,
+                }}
+                whileHover={{
+                  scale:
+                    activeCardIdx === idx
+                      ? SCALE_FACTOR
+                      : props.scaleOnHover
+                      ? SCALE_FACTOR
+                      : 1,
                 }}
                 animate={{
                   scale: idx === activeCardIdx ? 1 * SCALE_FACTOR : 1,
@@ -112,9 +126,27 @@ export default function Carousel(
             </AnimatePresence>
           ))}
         </div>
-        {!props.hideControls && (
-          <>
-            <div className="flex w-full justify-center gap-2 w-1/5 mt-5">
+
+        <div className="w-full grid place-items-center">
+          {props.pagination && (
+            <div className="mt-5 h-full flex gap-2">
+              {ITEMS.map((_, idx) => (
+                <button
+                  onClick={() => {
+                    setActiveCardIdx(idx);
+                  }}
+                  key={`pagination-carousel-${idx}`}
+                  className={`w-[10px] h-[10px] ${
+                    idx === activeCardIdx ? "bg-neutral-900" : "bg-neutral-300"
+                  } rounded-full`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        <>
+          {!props.hideControls && (
+            <div className="flex w-full justify-center spacing-2 w-1/5 mt-5">
               <button
                 onClick={() => {
                   setActiveCardIdx((prevCardIdx) => {
@@ -140,8 +172,8 @@ export default function Carousel(
                 {">"}
               </button>
             </div>
-          </>
-        )}
+          )}
+        </>
       </div>
     </div>
   );
